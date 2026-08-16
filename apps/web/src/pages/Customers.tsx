@@ -123,7 +123,9 @@ export default function Customers() {
         return (
           <div className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4" onClick={() => setSelected(null)}>
             <div className="bg-[var(--surface)] rounded-2xl p-5 w-full max-w-md max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
-              <div className="rounded-2xl p-5 text-white" style={{ background: tierColor[progress.current] }}>
+              <div className="rounded-[22px] p-5 text-white relative overflow-hidden" style={{ background: `linear-gradient(135deg, ${tierColor[progress.current]}ee 0%, ${tierColor[progress.current]} 100%)`, boxShadow: `0 12px 40px ${tierColor[progress.current]}55` }}>
+              <div className="absolute -top-10 -right-10 w-[140px] h-[140px] rounded-full bg-white/[0.08]" />
+              <div className="absolute -bottom-8 -left-6 w-[100px] h-[100px] rounded-full bg-white/[0.06]" />
                 <p className="text-[11px] uppercase tracking-widest font-bold opacity-70">Kadai OS · {progress.current}</p>
                 <p className="text-2xl font-extrabold mt-1">{selected.name}</p>
                 <p className="text-[13px] opacity-65">{selected.phone}</p>

@@ -107,7 +107,9 @@ function Shell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile tab bar */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur flex pb-[env(safe-area-inset-bottom)]">
-        {nav.slice(0, 5).map(({ to, label, Icon, end }) => (
+        {nav.slice(0, 5).map(({ to, label, Icon, end }) => {
+          const isBill = to === '/bill'
+          return (
           <NavLink
             key={to}
             to={to}
@@ -115,13 +117,24 @@ function Shell({ children }: { children: React.ReactNode }) {
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold ${
                 isActive ? 'text-[var(--primary)]' : 'text-[var(--text-2)]'
-              }`
+              } ${isBill ? '-mt-5' : ''}`
             }
           >
-            <Icon size={20} strokeWidth={2} />
+            {isBill ? (
+              <span
+                className={`w-[52px] h-[52px] rounded-[17px] grid place-items-center shadow-[0_4px_16px_rgba(0,0,0,0.18)] ${
+                  label === 'Bill' ? 'bg-[var(--primary)] text-white shadow-[0_6px_20px_rgba(79,70,229,0.45)]' : 'bg-[var(--surface-2)]'
+                }`}
+              >
+                <Icon size={22} strokeWidth={2} />
+              </span>
+            ) : (
+              <Icon size={20} strokeWidth={2} />
+            )}
             {label}
           </NavLink>
-        ))}
+          )
+        })}
       </nav>
     </div>
   )
