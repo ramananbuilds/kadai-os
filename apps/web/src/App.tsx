@@ -19,7 +19,7 @@ import { applyTheme, getThemeMode, type ThemeMode } from './lib/theme'
 
 import Login from './pages/Login'
 import NewShop from './pages/NewShop'
-import Home from './pages/Home'
+import TabbedApp from './screens/TabbedApp'
 import Bill from './pages/Bill'
 import Customers from './pages/Customers'
 import Inventory from './pages/Inventory'
@@ -161,7 +161,7 @@ export default function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/new-shop" element={<NewShop />} />
-        <Route path="/" element={<Gate><Home /></Gate>} />
+        <Route path="/" element={<Gate><TabbedApp /></Gate>} />
         <Route path="/bill" element={<Gate><Bill /></Gate>} />
         <Route path="/customers" element={<Gate><Customers /></Gate>} />
         <Route path="/inventory" element={<Gate><Inventory /></Gate>} />

@@ -6,6 +6,13 @@ phase-scoped until first store release.
 
 ## [Unreleased]
 
+### Changed
+- The counter at `/` now renders the **actual Figma-generated screens**
+  restored verbatim from the prototype commit — original markup, tab bar
+  with the elevated Bill pill, dark mode via More → Settings — in a
+  mobile-width column, auth-gated. (Screens had been re-interpreted in
+  Phase 4; the originals are the source of truth again.)
+
 ## [0.6.1] — 2026-08-17 — Branding, themes, icon packs
 
 ### Changed
