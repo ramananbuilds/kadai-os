@@ -20,11 +20,15 @@ as before — changes under `apps/web/src` are reflected immediately.
 - `packages/core` — the domain: types, paise/points integer math, zod wire
   schemas, id/phone helpers. No framework imports here.
 - `packages/api` — the backend seam. `KadaiDriver` interface + memory driver
-  (dev/demo) + supabase driver (Phase 1–2). **The ONLY package that may
-  import `@supabase/supabase-js`.** Apps call `createKadaiApi(driver)`,
-  never a driver directly.
+  (dev/demo) + supabase driver (billing/catalog/stock wired; auth in Phase
+  2). **The ONLY package that may import `@supabase/supabase-js`.** Apps call
+  `createKadaiApi(driver)`, never a driver directly.
 - `packages/ui` — design tokens: `tokens.css` (web) and `src/tokens.ts`
   (React Native mirror). Keep the two in sync — same names, same values.
+- `supabase/` — the database: `migrations/*.sql` (schema, RLS, `create_bill`
+  RPC, reporting views) and `seed.sql`. Append-only journals are enforced by
+  RLS policy, not convention. Domain language lives in `CONTEXT.md`;
+  hard-to-reverse decisions in `docs/adr/`.
 - Repo root `vite.config.ts` — the Figma Make shim described above. The real
   web config is `apps/web/vite.config.ts`.
 
@@ -37,6 +41,9 @@ as before — changes under `apps/web/src` are reflected immediately.
 - `pnpm typecheck` / `pnpm build` — turbo across all packages
 - `pnpm --filter @kadai-os/api smoke` — executable spec of the billing
   transaction (money math, ledger, idempotency, stock guards)
+- `pnpm --filter @kadai-os/api sql-smoke` — applies supabase/migrations to
+  in-process Postgres (PGlite) and asserts the SQL seams (RPC behavior,
+  RLS isolation, append-only enforcement, views)
 
 ## Invariants
 
