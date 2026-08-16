@@ -16,10 +16,13 @@ import {
   buildUpiDeepLink,
   computeEarnedPoints,
   discountPaise,
+  escposEncode,
   formatINR,
+  renderReceipt,
   resolveTier,
   rupeesToPaise,
   tierProgress,
+  type Shop,
 } from '@kadai-os/core'
 
 // ── Money ────────────────────────────────────────────────────────
@@ -93,6 +96,31 @@ const ledger = await api.listLedger(priya.id)
 assert.equal(ledger.length, 1)
 assert.equal(ledger[0].type, 'earn')
 assert.equal(ledger[0].balanceAfter, 4_850)
+
+// ── Receipt rendering + ESC/POS bytes ─────────────────────────────
+const demoShop: Shop = {
+  id: SHOP,
+  name: "Ravi's Boutique",
+  upiId: 'ravi@okhdfcbank',
+  gstin: null,
+  loyalty: { earnRule: { pointsPerHundredRupees: 1 }, tiers: { gold: 2000, platinum: 5000 } },
+  createdAt: '2026-01-01T00:00:00.000Z',
+}
+
+const receiptLines = renderReceipt(bill, demoShop, 'Priya Sharma')
+const receiptText = receiptLines.map((l) => l.text).join('\n')
+assert.ok(receiptText.includes('Bill #1088'), 'receipt carries the bill number')
+assert.ok(receiptText.includes('TOTAL'), 'receipt carries TOTAL')
+assert.ok(receiptText.includes('3,058'), 'receipt carries the formatted total') // ₹3,058
+assert.ok(receiptText.includes('+30'), 'receipt carries earned points')
+assert.ok(receiptLines.every((l) => l.text.length <= 32), '58mm width respected')
+const tall = receiptLines.find((l) => l.tall)!
+assert.ok(tall.text.includes('TOTAL'))
+
+const bytes = escposEncode(receiptLines)
+assert.equal(bytes[0], 0x1b, 'ESC @ init')
+assert.equal(bytes[1], 0x40)
+assert.deepEqual([...bytes.slice(-4)], [0x1d, 0x56, 0x42, 0x00], 'ends with full cut')
 
 // Idempotent replay (offline outbox resync)
 const replay = await api.createBill(SHOP, { ...bill, items: bill.items.map((i) => ({ productId: i.productId, qty: i.qty })) } as never)
