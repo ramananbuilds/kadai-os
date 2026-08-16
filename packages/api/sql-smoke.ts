@@ -54,7 +54,7 @@ async function freshDb(): Promise<PGlite> {
   const db = new PGlite()
   await db.exec(`
     create schema if not exists auth;
-    create table if not exists auth.users (id uuid primary key);
+    create table if not exists auth.users (id uuid primary key, phone text unique);
     create table if not exists auth._current_uid (uid uuid);
     create or replace function auth.uid() returns uuid language sql stable
       as $$ select uid from auth._current_uid $$;
@@ -227,5 +227,79 @@ assert.deepEqual(low.map((r) => r.sku), ['WLS-001'])
 const stats = (await q(db, `select * from customer_stats where id = '${PRIYA}'`))[0]
 assert.equal(stats.tier, 'gold') // 4850 pts: gold (2000) ≤ x < platinum (5000)
 console.log('✓ seam 3b: daily_sales, low_stock, customer_stats views')
+
+// ── Seam 4: onboarding — shop creation + staff invites ───────────
+
+const FRESH = '00000000-0000-4000-8000-0000000000a3'
+const STAFF_USER = '00000000-0000-4000-8000-0000000000a4'
+await db.exec(`
+  insert into auth.users (id, phone) values
+    ('${OWNER}', '+919000000001'),
+    ('${FRESH}', '+919600000003'),
+    ('${STAFF_USER}', '+919600000004')
+  on conflict (id) do update set phone = excluded.phone;
+`)
+
+// Unauthenticated callers cannot onboard.
+await db.exec(`update auth._current_uid set uid = null`)
+await assert.rejects(
+  () => q(db, `select create_shop_for_owner('Ghost Shop', 'ghost@upi')`),
+  /unauthenticated/i,
+)
+
+// A fresh user creates a shop: counter seeded, owner membership granted.
+await db.exec(`update auth._current_uid set uid = '${FRESH}'`)
+const newShop = (await q(db, `select * from create_shop_for_owner('Fresh Shop', 'fresh@upi')`))[0]
+assert.ok(newShop.id)
+assert.equal(
+  (await q(db, `select next_number::int n from bill_counters where shop_id = '${newShop.id}'`))[0].n,
+  1001,
+)
+assert.equal(
+  (await q(db, `select role from shop_members where shop_id = '${newShop.id}'`))[0].role,
+  'owner',
+)
+
+// v1: one shop per user — a second shop is rejected.
+await assert.rejects(
+  () => q(db, `select create_shop_for_owner('Second Shop', 'second@upi')`),
+  /already-member/i,
+)
+
+// Staff invites: PIN format enforced, unknown phones rejected.
+await assert.rejects(
+  () => q(db, `select add_staff_member('+919600000004', '12')`),
+  /pin/i,
+)
+await assert.rejects(
+  () => q(db, `select add_staff_member('+919999999999', '1234')`),
+  /user-not-found/i,
+)
+const staffMember = (await q(db, `select * from add_staff_member('+919600000004', '4321')`))[0]
+assert.equal(staffMember.role, 'staff')
+assert.equal(staffMember.pin, '4321')
+
+// Staff can bill in the shop they joined; non-owners cannot invite.
+await db.exec(`
+  insert into products (id, shop_id, name, sku, price_paise, stock_qty)
+  values ('00000000-0000-4000-8000-000000000120', '${newShop.id}', 'Fresh Item', 'FI-001', 25000, 10);
+`)
+await db.exec(`update auth._current_uid set uid = '${STAFF_USER}'`)
+const staffBill = (
+  await q(
+    db,
+    `select * from create_bill(
+       '${crypto.randomUUID()}'::uuid, null,
+       '[{"product_id":"00000000-0000-4000-8000-000000000120","qty":2}]'::jsonb,
+       0::smallint, 0::int, null, 'cash'::public.tender)`,
+  )
+)[0]
+assert.equal(n(staffBill.number), 1001)
+assert.equal(n(staffBill.total_paise), 50000)
+await assert.rejects(
+  () => q(db, `select add_staff_member('+919000000001', '1111')`),
+  /not-owner/i,
+)
+console.log('✓ seam 4: shop onboarding, staff invites, role guards')
 
 console.log('✓ sql-smoke: all seams passing')
