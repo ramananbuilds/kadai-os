@@ -15,7 +15,8 @@
     "@kadai-os/core": "workspace:*",
     "@kadai-os/ui": "workspace:*",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-router-dom": "^7.18.2"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.0.0",
