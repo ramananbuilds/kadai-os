@@ -13,6 +13,7 @@ import assert from 'node:assert/strict'
 import { createKadaiApi, createMemoryDriver } from './src/index'
 
 import {
+  buildUpiDeepLink,
   computeEarnedPoints,
   discountPaise,
   formatINR,
@@ -37,6 +38,21 @@ const tp = tierProgress(2_140)
 assert.equal(tp.current, 'gold')
 assert.equal(tp.next, 'platinum')
 assert.equal(tp.remaining, 2_860)
+
+// ── UPI intent links ─────────────────────────────────────────────
+assert.equal(
+  buildUpiDeepLink({
+    payeeVpa: 'ravi@okhdfcbank',
+    payeeName: "Ravi's Boutique",
+    amountPaise: rupeesToPaise(3058.2),
+    note: 'Bill 1088',
+  }),
+  'upi://pay?pa=ravi%40okhdfcbank&pn=Ravi%27s+Boutique&am=3058.20&cu=INR&tn=Bill+1088',
+)
+assert.equal(
+  buildUpiDeepLink({ payeeVpa: 'shop@upi', payeeName: 'Shop' }),
+  'upi://pay?pa=shop%40upi&pn=Shop',
+)
 
 // ── Memory driver: the billing transaction ───────────────────────
 const api = createKadaiApi(createMemoryDriver())
