@@ -6,6 +6,33 @@ phase-scoped until first store release.
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-08-17 — Phase 4: web rebuild + back-office
+
+### Added
+- Responsive web app (React Router): phone frame stripped; sidebar on
+  desktop, bottom tabs on small screens; OS-preference dark mode via the
+  shared tokens.
+- Auth flow on web: phone-OTP login, first-run shop creation, session
+  gate that routes no-shop users to onboarding.
+- Keyboard-first billing page — type/↑↓/Enter to build the cart, customer
+  pick, % discount, tender — checking out straight through `create_bill`
+  (web is online-first), with receipt preview and 58 mm print-CSS.
+- Owner back-office: Reports (7-day revenue chart, tender split, top
+  products), Rewards & loyalty editor (points per ₹100, tier thresholds,
+  reward catalog with retire), Settings (shop profile incl. UPI/GSTIN,
+  staff list, backend indicator).
+- Customers CRM: searchable list, tier cards, profile with tier-progress
+  and the append-only loyalty ledger.
+- Inventory CRUD: add-product form (paise-safe inputs), low-stock filter,
+  counter adjustments via `adjust_stock`.
+- `createReward` / `setRewardActive` on the driver seam (all three
+  drivers in lockstep).
+
+### Removed
+- The Figma Make prototype screens (`apps/web/src/screens`) — the design
+  reference served its purpose and lives in git history; the mobile app
+  and shared tokens carry the visual system forward.
+
 ## [0.3.0] — 2026-08-17 — Phase 3: mobile app
 
 ### Added

@@ -17,7 +17,7 @@ like money — append-only ledger, integer math, server-authoritative.
 | 1 | Postgres schema, RLS, `create_bill` RPC, views | ✅ done |
 | 2 | Phone-OTP auth, shop onboarding, staff invites, driver surface | ✅ done |
 | 3 | Mobile app: screen stack, barcode scanning, offline outbox, receipts | ✅ core loop (Bluetooth ESC/POS transport awaits the native build) |
-| 4 | Web full-parity rebuild + owner back-office | planned |
+| 4 | Web full-parity rebuild + owner back-office | ✅ done |
 | 5 | Realtime sync across all clients | planned |
 | 6 | Loyalty engine polish, launch hardening | planned |
 
