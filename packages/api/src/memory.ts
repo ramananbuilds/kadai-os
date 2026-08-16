@@ -23,19 +23,38 @@ import {
   type ProductInput,
   type Reward,
   type Shop,
+  type ShopMember,
   type StockMovement,
   type StockReason,
 } from '@kadai-os/core'
 
-import type { DailySummary, KadaiDriver, OutboxEntry, Session, SyncResult } from './driver'
+import type {
+  DailySummary,
+  KadaiDriver,
+  OutboxEntry,
+  Session,
+  SyncResult,
+} from './driver'
 
 const SHOP_ID = '00000000-0000-4000-8000-000000000001'
 const OWNER_USER_ID = '00000000-0000-4000-8000-0000000000a1'
 
 const now = () => new Date().toISOString()
 
+/** Session with membership resolved from the members list (SQL: shop_members). */
+function resolveSession(state: MemoryState, userId: string): Session {
+  const member = state.members.find((m) => m.userId === userId)
+  return {
+    userId,
+    shopId: member?.shopId ?? null,
+    role: member?.role ?? null,
+    expiresAt: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
+  }
+}
+
 interface MemoryState {
   shop: Shop
+  members: ShopMember[]
   products: Map<string, Product>
   customers: Map<string, Customer>
   bills: Map<string, Bill>
@@ -152,6 +171,16 @@ function seedState(): MemoryState {
       },
     ],
     nextBillNumber: 1_088,
+    members: [
+      {
+        id: '00000000-0000-4000-8000-0000000000b1',
+        shopId: SHOP_ID,
+        userId: OWNER_USER_ID,
+        role: 'owner',
+        pin: null,
+        createdAt: t0,
+      },
+    ],
     session: null,
     otps: new Map(),
   }
@@ -294,12 +323,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
     async verifyOtp(phone, token) {
       const expected = state.otps.get(phone) ?? devOtp
       if (token !== expected) throw new Error('Invalid OTP')
-      state.session = {
-        userId: OWNER_USER_ID,
-        shopId: SHOP_ID,
-        role: 'owner',
-        expiresAt: new Date(Date.now() + 30 * 24 * 3600 * 1000).toISOString(),
-      }
+      state.session = resolveSession(state, OWNER_USER_ID)
       return state.session
     },
 
@@ -309,6 +333,62 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
 
     async getSession() {
       return state.session
+    },
+
+    createShopForOwner(input) {
+      if (!state.session) return Promise.reject(new Error('KADAI/unauthenticated: sign in first'))
+      if (state.session.shopId) {
+        return Promise.reject(new Error('KADAI/already-member: this user already belongs to a shop'))
+      }
+      const t = now()
+      const shop: Shop = {
+        id: crypto.randomUUID(),
+        name: input.name,
+        upiId: input.upiId,
+        gstin: input.gstin ?? null,
+        loyalty: { earnRule: DEFAULT_EARN_RULE, tiers: DEFAULT_TIERS },
+        createdAt: t,
+      }
+      const owner: ShopMember = {
+        id: crypto.randomUUID(),
+        shopId: shop.id,
+        userId: state.session.userId,
+        role: 'owner',
+        pin: null,
+        createdAt: t,
+      }
+      // Fresh shop, fresh books — mirrors the SQL transaction.
+      state.shop = shop
+      state.members = [owner]
+      state.products = new Map()
+      state.customers = new Map()
+      state.bills = new Map()
+      state.ledger = []
+      state.stockMovements = []
+      state.rewards = []
+      state.nextBillNumber = 1001
+      state.session = { ...state.session, shopId: shop.id, role: 'owner' }
+      return Promise.resolve(shop)
+    },
+
+    addStaffMember(phone, pin) {
+      if (!state.session || state.session.role !== 'owner') {
+        return Promise.reject(new Error('KADAI/not-owner: only owners can invite staff'))
+      }
+      if (!/^\d{4}$/.test(pin)) {
+        return Promise.reject(new Error('KADAI/bad-pin: PIN must be exactly 4 digits'))
+      }
+      const member: ShopMember = {
+        id: crypto.randomUUID(),
+        shopId: state.session.shopId!,
+        // Memory driver keeps no user registry; a stable id per phone.
+        userId: `mem-${phone}`,
+        role: 'staff',
+        pin,
+        createdAt: now(),
+      }
+      state.members.push(member)
+      return Promise.resolve(member)
     },
 
     async getShop() {
@@ -321,16 +401,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
     },
 
     async listMembers() {
-      return [
-        {
-          id: '00000000-0000-4000-8000-0000000000b1',
-          shopId: SHOP_ID,
-          userId: OWNER_USER_ID,
-          role: 'owner',
-          pin: null,
-          createdAt: '2026-01-01T00:00:00.000Z',
-        },
-      ]
+      return state.members
     },
 
     async listProducts(_shopId, filter) {

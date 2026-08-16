@@ -18,6 +18,7 @@ import type {
   CustomerInput,
   Iso8601,
   LoyaltyEntry,
+  MemberRole,
   Product,
   ProductInput,
   Reward,
@@ -29,10 +30,15 @@ import type {
 
 // ─── Auth & session ──────────────────────────────────────────────
 
+/**
+ * A signed-in identity plus its (single, in v1) shop membership.
+ * shopId/role are null right after OTP for a first-time user — the app
+ * routes them to onboarding until createShopForOwner() fills it in.
+ */
 export interface Session {
   userId: string
-  shopId: string
-  role: 'owner' | 'staff'
+  shopId: string | null
+  role: MemberRole | null
   expiresAt: Iso8601
 }
 
@@ -70,12 +76,16 @@ export interface DailySummary {
 // ─── The contract ────────────────────────────────────────────────
 
 export interface KadaiDriver {
-  // Auth — phone OTP for owners, PIN quick-switch happens client-side
-  // against shopMembers after the session exists.
+  // Auth — phone OTP for owners; staff quick-switch PINs are client-side
+  // against listMembers after the session exists.
   sendOtp(phone: string): Promise<void>
   verifyOtp(phone: string, token: string): Promise<Session>
   signOut(): Promise<void>
   getSession(): Promise<Session | null>
+
+  // Onboarding (Phase 2)
+  createShopForOwner(input: { name: string; upiId: string; gstin?: string | null }): Promise<Shop>
+  addStaffMember(phone: string, pin: string): Promise<ShopMember>
 
   // Shop
   getShop(shopId: string): Promise<Shop>
