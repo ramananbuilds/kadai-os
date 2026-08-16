@@ -40,6 +40,8 @@ export interface Shop {
   /** Shop's own UPI id, rendered as a static QR at checkout (v1 payments). */
   upiId: string
   gstin: string | null
+  /** Points older than this expire (FIFO); null = never. */
+  pointsExpiryDays: number | null
   loyalty: LoyaltyConfig
   createdAt: Iso8601
 }

@@ -103,6 +103,7 @@ const demoShop: Shop = {
   name: "Ravi's Boutique",
   upiId: 'ravi@okhdfcbank',
   gstin: null,
+  pointsExpiryDays: null,
   loyalty: { earnRule: { pointsPerHundredRupees: 1 }, tiers: { gold: 2000, platinum: 5000 } },
   createdAt: '2026-01-01T00:00:00.000Z',
 }
@@ -127,6 +128,28 @@ const replay = await api.createBill(SHOP, { ...bill, items: bill.items.map((i) =
 assert.equal(replay.id, bill.id)
 assert.equal(replay.number, bill.number)
 assert.equal((await api.listProducts(SHOP)).find((p) => p.id === jacket.id)!.stockQty, 7) // not double-decremented
+
+// Reward redemption charges its point cost with the discount (memory
+// driver mirror of seam 5 in sql-smoke).
+const rewardBill = await api.createBill(SHOP, {
+  id: crypto.randomUUID(),
+  customerId: priya.id,
+  items: [{ productId: jacket.id, qty: 1 }],
+  discountPercent: 0,
+  redeemedPoints: 0,
+  redeemedRewardId: '00000000-0000-4000-8000-000000000301', // ₹500 off, cost 500 pts
+  tender: 'upi',
+  createdAt: new Date().toISOString(),
+})
+assert.equal(rewardBill.totalPaise, 249900 - 50000) // flat ₹500 off ₹2,499
+assert.equal(rewardBill.redeemedPoints, 500) // cost points on the bill
+assert.equal(rewardBill.earnedPoints, 19) // floor(₹1,999 / ₹100)
+const afterReward = (await api.listCustomers(SHOP))[0]
+assert.equal(afterReward.pointsBalance, 4_850 + 19 - 500)
+const rewardLedger = await api.listLedger(priya.id)
+assert.equal(rewardLedger.at(-1)!.type, 'earn')
+assert.equal(rewardLedger.filter((e) => e.type === 'redeem')[0]!.points, -500)
+console.log('✓ reward redemption: discount + point cost in one transaction')
 
 // Insufficient stock must throw
 await assert.rejects(

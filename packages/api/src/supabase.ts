@@ -41,6 +41,7 @@ interface ShopRow {
   name: string
   upi_id: string
   gstin: string | null
+  points_expiry_days: number | null
   earn_points_per_hundred_rupees: number
   tier_gold_points: number
   tier_platinum_points: number
@@ -53,6 +54,7 @@ function mapShop(r: ShopRow): Shop {
     name: r.name,
     upiId: r.upi_id,
     gstin: r.gstin,
+    pointsExpiryDays: r.points_expiry_days,
     loyalty: {
       earnRule: { pointsPerHundredRupees: r.earn_points_per_hundred_rupees },
       tiers: { gold: r.tier_gold_points, platinum: r.tier_platinum_points },
@@ -450,6 +452,17 @@ export function createSupabaseDriver(config: SupabaseConfig): KadaiDriver {
       return unwrap(
         await db.from('rewards').update({ is_active: isActive }).eq('id', rewardId).select().single(),
       )
+    },
+
+    async expireStalePoints(_shopId) {
+      const row = unwrap(await db.rpc('expire_stale_points')) as {
+        customers_checked: number | string
+        points_expired: number | string
+      }
+      return {
+        customersChecked: Number(row?.customers_checked ?? 0),
+        pointsExpired: Number(row?.points_expired ?? 0),
+      }
     },
 
     async dailySummary(shopId, date): Promise<DailySummary> {

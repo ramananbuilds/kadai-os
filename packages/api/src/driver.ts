@@ -136,6 +136,9 @@ export interface KadaiDriver {
   listRewards(shopId: string): Promise<Reward[]>
   createReward(shopId: string, input: Omit<Reward, 'id' | 'shopId' | 'isActive'>): Promise<Reward>
   setRewardActive(rewardId: string, isActive: boolean): Promise<Reward>
+  /** FIFO-expire stale points (shop's pointsExpiryDays); appends 'expire'
+   *  entries. Schedule via pg_cron in prod or call from the back-office. */
+  expireStalePoints(shopId: string): Promise<{ customersChecked: number; pointsExpired: number }>
 
   // Aggregates
   dailySummary(shopId: string, date: string): Promise<DailySummary>

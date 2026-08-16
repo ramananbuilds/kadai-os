@@ -138,6 +138,7 @@ function seedState(): MemoryState {
       name: "Ravi's Boutique",
       upiId: 'ravi@okhdfcbank',
       gstin: null,
+      pointsExpiryDays: null,
       loyalty: { earnRule: DEFAULT_EARN_RULE, tiers: DEFAULT_TIERS },
       createdAt: t0,
     },
@@ -240,22 +241,27 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
     // 2. Money math via @kadai-os/core only.
     const subtotal = subtotalPaise(items)
     const discount = discountPaise(subtotal, draft.discountPercent)
-    const flatRewardPaise = (() => {
-      if (!draft.redeemedRewardId) return 0
-      const reward = state.rewards.find((r) => r.id === draft.redeemedRewardId)
-      if (!reward || !reward.isActive) throw new Error('Reward not found or inactive')
-      return reward.kind === 'flat_off' ? reward.value : 0
-    })()
-    const total = billTotalPaise(subtotal, draft.discountPercent, flatRewardPaise)
-
-    // 3. Loyalty: redemption must be covered by the balance.
     const customer = draft.customerId ? state.customers.get(draft.customerId) : undefined
     if (draft.customerId && !customer) throw new Error('Customer not found')
-    if (draft.redeemedPoints > 0) {
-      if (!customer) throw new Error('Cannot redeem points on a walk-in bill')
-      if (draft.redeemedPoints > customer.pointsBalance) {
-        throw new Error(`Insufficient points: balance ${customer.pointsBalance}, tried to redeem ${draft.redeemedPoints}`)
-      }
+
+    // Reward: flat off reduces the total; percent off stacks onto the
+    // discount; either way its costPoints are charged on redemption.
+    const reward = (() => {
+      if (!draft.redeemedRewardId) return undefined
+      const r = state.rewards.find((x) => x.id === draft.redeemedRewardId)
+      if (!r || !r.isActive) throw new Error('Reward not found or inactive')
+      if (!customer) throw new Error('Cannot redeem a reward on a walk-in bill')
+      return r
+    })()
+    const flatRewardPaise = reward?.kind === 'flat_off' ? reward.value : 0
+    const effectivePercent = reward?.kind === 'percent_off' ? Math.min(100, draft.discountPercent + reward.value) : draft.discountPercent
+    const total = billTotalPaise(subtotal, effectivePercent, flatRewardPaise)
+
+    // 3. Loyalty: redemption (raw + reward cost) must be covered by the balance.
+    const redeemTotal = draft.redeemedPoints + (reward?.costPoints ?? 0)
+    if (redeemTotal > 0 && !customer) throw new Error('Cannot redeem points on a walk-in bill')
+    if (customer && redeemTotal > customer.pointsBalance) {
+      throw new Error(`Insufficient points: balance ${customer.pointsBalance}, tried to redeem ${redeemTotal}`)
     }
 
     const earnedPoints = customer ? computeEarnedPoints(total, state.shop.loyalty.earnRule) : 0
@@ -266,11 +272,11 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
       customerId: draft.customerId ?? null,
       items,
       subtotalPaise: subtotal,
-      discountPercent: draft.discountPercent,
-      discountPaise: discount,
+      discountPercent: effectivePercent,
+      discountPaise: discountPaise(subtotal, effectivePercent),
       totalPaise: total,
       earnedPoints,
-      redeemedPoints: draft.redeemedPoints,
+      redeemedPoints: redeemTotal,
       redeemedRewardId: draft.redeemedRewardId ?? null,
       tender: draft.tender,
       status: 'completed',
@@ -296,16 +302,16 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
 
     // 5. Commit: loyalty ledger + customer aggregates.
     if (customer) {
-      if (draft.redeemedPoints > 0) {
-        customer.pointsBalance -= draft.redeemedPoints
+      if (redeemTotal > 0) {
+        customer.pointsBalance -= redeemTotal
         state.ledger.push({
           id: crypto.randomUUID(),
           shopId: SHOP_ID,
           customerId: customer.id,
           type: 'redeem',
-          points: -draft.redeemedPoints,
+          points: -redeemTotal,
           billId: bill.id,
-          note: null,
+          note: reward ? 'reward redemption' : 'bill redemption',
           balanceAfter: customer.pointsBalance,
           createdAt: now(),
         })
@@ -365,6 +371,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
         name: input.name,
         upiId: input.upiId,
         gstin: input.gstin ?? null,
+        pointsExpiryDays: null,
         loyalty: { earnRule: DEFAULT_EARN_RULE, tiers: DEFAULT_TIERS },
         createdAt: t,
       }
@@ -592,5 +599,55 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
     },
 
     subscribe: (shopId, onChange) => emitter.subscribe(shopId, onChange),
+
+    async expireStalePoints(_shopId) {
+      const days = state.shop.pointsExpiryDays
+      if (days === null) return { customersChecked: 0, pointsExpired: 0 }
+
+      const cutoff = Date.now() - days * 24 * 3600 * 1000
+      let expiredTotal = 0
+      let checked = 0
+
+      for (const customer of state.customers.values()) {
+        if (customer.pointsBalance <= 0) continue
+        checked += 1
+        // FIFO replay — mirrors expire_stale_points(): redeems consume
+        // aged points first; only never-spent aged earns expire.
+        let aged = 0
+        let fresh = 0
+        const entries = [...state.ledger].filter((e) => e.customerId === customer.id).sort((a, b) => (a.createdAt < b.createdAt ? -1 : 1))
+        for (const e of entries) {
+          if (e.type === 'earn') {
+            if (new Date(e.createdAt).getTime() < cutoff) aged += e.points
+            else fresh += e.points
+          } else if (e.type === 'redeem' || e.type === 'expire') {
+            const burn = -e.points
+            const fromAged = Math.min(aged, burn)
+            aged -= fromAged
+            fresh = Math.max(0, fresh - (burn - fromAged))
+          } else {
+            fresh = Math.max(0, fresh + e.points)
+          }
+        }
+        const stale = Math.min(aged, customer.pointsBalance)
+        if (stale > 0) {
+          customer.pointsBalance -= stale
+          state.ledger.push({
+            id: crypto.randomUUID(),
+            shopId: SHOP_ID,
+            customerId: customer.id,
+            type: 'expire',
+            points: -stale,
+            billId: null,
+            note: `expired after ${days} days`,
+            balanceAfter: customer.pointsBalance,
+            createdAt: now(),
+          })
+          expiredTotal += stale
+        }
+      }
+      if (expiredTotal > 0) emitter.notify(['customers', 'loyalty_ledger'])
+      return { customersChecked: checked, pointsExpired: expiredTotal }
+    },
   }
 }

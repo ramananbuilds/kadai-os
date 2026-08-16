@@ -302,4 +302,54 @@ await assert.rejects(
 )
 console.log('✓ seam 4: shop onboarding, staff invites, role guards')
 
+// ── Seam 5: loyalty engine — reward cost + points expiry ─────────
+
+await db.exec(`update auth._current_uid set uid = '${OWNER}'`)
+
+// Redeeming the ₹500 reward (cost 500 pts) charges its point cost and
+// applies the flat discount, atomically.
+const rewardBill = (
+  await q(
+    db,
+    `select * from create_bill(
+       '${crypto.randomUUID()}'::uuid, '${PRIYA}',
+       '[{"product_id":"${JACKET}","qty":1}]'::jsonb,
+       0::smallint, 0::int, '${REWARD_FLAT}'::uuid, 'upi'::public.tender)`,
+  )
+)[0]
+assert.equal(n(rewardBill.total_paise), 249900 - 50000) // flat ₹500 off
+assert.equal(n(rewardBill.redeemed_points), 500) // reward cost recorded on the bill
+const postReward = (await q(db, `select * from customers where id = '${PRIYA}'`))[0]
+assert.equal(n(postReward.points_balance), 4850 + 19 - 500) // prior 4850, earn 19, reward cost 500
+
+// Expiry: FIFO replay — redeems consume the oldest points first, so only
+// aged earns that were never spent expire. Priya's aged earn was consumed
+// by her later redemption (expires nothing); Old Timer's wasn't (expires all).
+const OLD_TIMER = '00000000-0000-4000-8000-000000000204'
+await db.exec(`
+  update shops set points_expiry_days = 365 where id = '${SHOP}';
+  insert into customers (id, shop_id, name, phone, points_balance)
+  values ('${OLD_TIMER}', '${SHOP}', 'Old Timer', '+919123456789', 300);
+  insert into loyalty_ledger (shop_id, customer_id, type, points, balance_after, created_at)
+  values ('${SHOP}', '${OLD_TIMER}', 'earn', 300, 300, now() - interval '400 days');
+`)
+const expired = (await q(db, `select * from expire_stale_points()`))[0]
+assert.equal(n(expired.points_expired), 300)
+assert.equal(
+  (await q(db, `select points_balance::int b from customers where id = '${OLD_TIMER}'`))[0].b,
+  0,
+)
+assert.equal(
+  (await q(db, `select points_balance::int b from customers where id = '${PRIYA}'`))[0].b,
+  n(postReward.points_balance),
+)
+assert.equal(
+  (await q(db, `select count(*)::int c from loyalty_ledger where type = 'expire'`))[0].c,
+  1,
+)
+// Idempotent: the 'expire' entry itself is replayed as consumption.
+const secondRun = (await q(db, `select * from expire_stale_points()`))[0]
+assert.equal(n(secondRun.points_expired), 0)
+console.log('✓ seam 5: reward cost redemption + FIFO points expiry')
+
 console.log('✓ sql-smoke: all seams passing')
