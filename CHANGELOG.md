@@ -6,6 +6,24 @@ phase-scoped until first store release.
 
 ## [Unreleased]
 
+## [0.5.0] — 2026-08-17 — Phase 5: live sync
+
+### Added
+- `subscribe(shopId, onChange)` on the driver seam: invalidation signals
+  (not payloads) so clients refetch through the driver and rows are
+  mapped exactly once.
+- Supabase Realtime channel per shop — one `postgres_changes`
+  registration per table, RLS-scoped — plus `0006_realtime.sql`
+  publishing the shop tables (a no-op on vanilla Postgres, so the PGlite
+  harness still applies it).
+- Memory driver emits the same signals from an in-process emitter on
+  every mutation, so demo mode is realtime too — and the seam is
+  smoke-tested (bill → bills/stock/ledger/customers signals,
+  unsubscribe stops delivery).
+- Session `version` counters on web and mobile: every page/screen
+  refetches when a remote change lands — a bill on the counter phone
+  appears on the owner's dashboard and staff devices without polling.
+
 ## [0.4.0] — 2026-08-17 — Phase 4: web rebuild + back-office
 
 ### Added
