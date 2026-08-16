@@ -10,7 +10,8 @@
   },
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "smoke": "tsx smoke.ts"
+    "smoke": "tsx smoke.ts",
+    "sql-smoke": "tsx sql-smoke.ts"
   },
   "dependencies": {
     "@kadai-os/core": "workspace:*",
@@ -18,6 +19,7 @@
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.5",
     "tsx": "^4.20.0",
     "typescript": "^5.7.0"
   }
