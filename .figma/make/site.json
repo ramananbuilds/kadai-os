@@ -1,0 +1,10 @@
+{
+  "description": "A premium retail OS for small to medium stores offering fast billing, inventory, customer loyalty, and AI insights in a clean, user-friendly mobile design.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}

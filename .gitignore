@@ -1,0 +1,23 @@
+node_modules/
+dist/
+build/
+.cache/
+.env*
+.vite/
+vite.config.*.timestamp-*
+*.tsbuildinfo
+*-debug.log*
+logs/
+*.log
+.claude-replay.*
+.tmp-*
+
+# Monorepo tooling state
+.turbo/
+.expo/
+
+# Supabase CLI local state (migrations ARE tracked)
+.supabase/
+
+# Figma Make sandbox session state
+.kimchi/
