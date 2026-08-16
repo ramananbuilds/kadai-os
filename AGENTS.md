@@ -61,3 +61,5 @@ as before — changes under `apps/web/src` are reflected immediately.
   in a single-quoted string breaks the build.
 - Ensure JSX tags are closed and braces are balanced.
 - Export components as default exports.
+- **Keep `README.md` (status table) and `CHANGELOG.md` (Unreleased section)
+  updated with every meaningful change** — they ship with each phase.
