@@ -1,0 +1,28 @@
+{
+  "name": "kadai-os",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "packageManager": "pnpm@10.34.3",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "dev:web": "pnpm --filter @kadai-os/web dev",
+    "dev:mobile": "pnpm --filter @kadai-os/mobile start",
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "format": "oxfmt"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/node": "^22.0.0",
+    "@vitejs/plugin-react": "^6.0.0",
+    "oxfmt": "^0.2.0",
+    "tailwindcss": "^4.0.0",
+    "turbo": "^2.5.0",
+    "typescript": "^5.7.0",
+    "vite": "^8.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild", "expo", "sharp", "better-sqlite3"]
+  }
+}
