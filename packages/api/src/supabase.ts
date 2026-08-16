@@ -27,7 +27,7 @@ import {
   type ShopMember,
 } from '@kadai-os/core'
 
-import type { DailySummary, KadaiDriver, OutboxEntry, Session, SyncResult } from './driver'
+import type { DailySummary, KadaiDriver, OutboxEntry, Session, SyncResult, ChangeEvent, Unsubscribe } from './driver'
 
 export interface SupabaseConfig {
   url: string
@@ -494,6 +494,31 @@ export function createSupabaseDriver(config: SupabaseConfig): KadaiDriver {
         }
       }
       return { accepted, rejected }
+    },
+
+    subscribe(shopId: string, onChange: (event: ChangeEvent) => void): Unsubscribe {
+      // One channel, one postgres_changes registration per table, filtered
+      // to this shop (RLS additionally scopes rows to the caller). Events
+      // are invalidation signals only — clients refetch through the driver.
+      const channel = db.channel(`kadai-shop-${shopId}`)
+      const tables: Array<{ table: ChangeEvent['table']; filter: string }> = [
+        { table: 'shops', filter: `id=eq.${shopId}` },
+        { table: 'products', filter: `shop_id=eq.${shopId}` },
+        { table: 'stock_movements', filter: `shop_id=eq.${shopId}` },
+        { table: 'customers', filter: `shop_id=eq.${shopId}` },
+        { table: 'loyalty_ledger', filter: `shop_id=eq.${shopId}` },
+        { table: 'rewards', filter: `shop_id=eq.${shopId}` },
+        { table: 'bills', filter: `shop_id=eq.${shopId}` },
+      ]
+      for (const { table, filter } of tables) {
+        channel.on('postgres_changes', { event: '*', schema: 'public', table, filter }, () =>
+          onChange({ table }),
+        )
+      }
+      channel.subscribe()
+      return () => {
+        void db.removeChannel(channel)
+      }
     },
   }
 }

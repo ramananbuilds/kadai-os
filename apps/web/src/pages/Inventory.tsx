@@ -17,7 +17,7 @@ const status = (p: Product) =>
 const emptyForm = { name: '', sku: '', price: '', cost: '', stock: '', reorder: '5', category: 'General' }
 
 export default function Inventory() {
-  const { shop } = useSession()
+  const { shop, version } = useSession()
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
   const [lowOnly, setLowOnly] = useState(false)
@@ -33,7 +33,7 @@ export default function Inventory() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   const filtered = useMemo(() => (lowOnly ? products.filter((p) => p.stockQty <= p.reorderLevel) : products), [products, lowOnly])
   const stockValue = products.reduce((s, p) => s + p.stockQty * p.costPaise, 0)

@@ -12,7 +12,7 @@ export default function Customers() {
   const dark = useColorScheme() === 'dark'
   const t = dark ? darkTheme : lightTheme
   const { top } = useSafeAreaInsets()
-  const { shop } = useSession()
+  const { shop, version } = useSession()
 
   const [customers, setCustomers] = useState<Customer[]>([])
   const [search, setSearch] = useState('')
@@ -25,7 +25,7 @@ export default function Customers() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   const progress = selected ? tierProgress(selected.pointsBalance) : null
 

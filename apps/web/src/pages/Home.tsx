@@ -9,7 +9,7 @@ import { useSession } from '../lib/session'
 const card = 'rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4'
 
 export default function Home() {
-  const { shop } = useSession()
+  const { shop, version } = useSession()
   const [revenue, setRevenue] = useState(0)
   const [billCount, setBillCount] = useState(0)
   const [lowStock, setLowStock] = useState<Product[]>([])
@@ -31,7 +31,7 @@ export default function Home() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   return (
     <div className="flex flex-col gap-5">

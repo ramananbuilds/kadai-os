@@ -10,7 +10,7 @@ const card = 'rounded-2xl border border-[var(--border)] bg-[var(--surface)]'
 const tierColor: Record<string, string> = { silver: '#64748B', gold: '#F59E0B', platinum: '#818CF8' }
 
 export default function Customers() {
-  const { shop } = useSession()
+  const { shop, version } = useSession()
   const [customers, setCustomers] = useState<Customer[]>([])
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<Customer | null>(null)
@@ -27,7 +27,7 @@ export default function Customers() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   useEffect(() => {
     if (selected) void api.listLedger(selected.id).then(setLedger).catch(() => setLedger([]))

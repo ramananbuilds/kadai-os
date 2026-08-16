@@ -33,7 +33,7 @@ export default function BillScreen() {
   const dark = useColorScheme() === 'dark'
   const t = dark ? darkTheme : lightTheme
   const { top } = useSafeAreaInsets()
-  const { shop } = useSession()
+  const { shop, version } = useSession()
 
   const [search, setSearch] = useState('')
   const [products, setProducts] = useState<Product[]>([])
@@ -60,7 +60,7 @@ export default function BillScreen() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   const filtered = useMemo(() => {
     if (!search) return products

@@ -25,7 +25,7 @@ const card = 'rounded-2xl border border-[var(--border)] bg-[var(--surface)]'
 
 /** The counter, keyboard-first: autofocus search, ↑↓ picks, Enter adds. */
 export default function BillPage() {
-  const { shop } = useSession()
+  const { shop, version } = useSession()
   const [products, setProducts] = useState<Product[]>([])
   const [customers, setCustomers] = useState<Customer[]>([])
   const [search, setSearch] = useState('')
@@ -51,7 +51,7 @@ export default function BillPage() {
   useEffect(() => {
     void load()
     searchRef.current?.focus()
-  }, [load])
+  }, [load, version])
 
   const filtered = useMemo(() => {
     if (!search) return products

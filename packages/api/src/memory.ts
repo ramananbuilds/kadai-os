@@ -34,12 +34,29 @@ import type {
   OutboxEntry,
   Session,
   SyncResult,
+  ChangeEvent,
+  Unsubscribe,
 } from './driver'
 
 const SHOP_ID = '00000000-0000-4000-8000-000000000001'
 const OWNER_USER_ID = '00000000-0000-4000-8000-0000000000a1'
 
 const now = () => new Date().toISOString()
+
+/** In-process realtime: mutations notify subscribers (same semantics as
+ *  the Supabase driver's postgres_changes channel). */
+function createEmitter() {
+  const listeners = new Set<(e: ChangeEvent) => void>()
+  return {
+    subscribe(_shopId: string, onChange: (e: ChangeEvent) => void): Unsubscribe {
+      listeners.add(onChange)
+      return () => listeners.delete(onChange)
+    },
+    notify(tables: ChangeEvent['table'][]) {
+      for (const l of listeners) for (const table of tables) l({ table })
+    },
+  }
+}
 
 /** Session with membership resolved from the members list (SQL: shop_members). */
 function resolveSession(state: MemoryState, userId: string): Session {
@@ -194,6 +211,7 @@ export interface MemoryDriverOptions {
 export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriver {
   const state = seedState()
   const devOtp = options.devOtp ?? '123456'
+  const emitter = createEmitter()
 
   /** The transactional core — mirrors what create_bill() must do in SQL. */
   function commitBill(draft: BillDraft): Bill {
@@ -312,6 +330,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
     }
 
     state.bills.set(bill.id, bill)
+    emitter.notify(['bills', 'stock_movements', 'products', 'loyalty_ledger', 'customers'])
     return bill
   }
 
@@ -397,6 +416,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
 
     async updateShop(_shopId, patch) {
       state.shop = { ...state.shop, ...patch, loyalty: { ...state.shop.loyalty, ...patch.loyalty } }
+      emitter.notify(['shops'])
       return state.shop
     },
 
@@ -440,6 +460,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
           createdAt: now(),
         })
       }
+      emitter.notify(['products', ...(input.stockQty > 0 ? (['stock_movements'] as const) : [])])
       return product
     },
 
@@ -447,6 +468,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
       const product = state.products.get(productId)
       if (!product) throw new Error('Product not found')
       Object.assign(product, patch, { updatedAt: now() })
+      emitter.notify(['products'])
       return product
     },
 
@@ -468,6 +490,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
         createdAt: now(),
       }
       state.stockMovements.push(movement)
+      emitter.notify(['stock_movements', 'products'])
       return movement
     },
 
@@ -495,6 +518,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
         createdAt: now(),
       }
       state.customers.set(customer.id, customer)
+      emitter.notify(['customers'])
       return customer
     },
 
@@ -526,6 +550,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
         isActive: true,
       }
       state.rewards.push(reward)
+      emitter.notify(['rewards'])
       return reward
     },
 
@@ -533,6 +558,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
       const reward = state.rewards.find((r) => r.id === rewardId)
       if (!reward) throw new Error('Reward not found')
       reward.isActive = isActive
+      emitter.notify(['rewards'])
       return reward
     },
 
@@ -564,5 +590,7 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
       }
       return { accepted, rejected }
     },
+
+    subscribe: (shopId, onChange) => emitter.subscribe(shopId, onChange),
   }
 }

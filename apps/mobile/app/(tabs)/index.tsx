@@ -14,7 +14,7 @@ export default function Home() {
   const t = dark ? darkTheme : lightTheme
   const router = useRouter()
   const { top } = useSafeAreaInsets()
-  const { shop, pending } = useSession()
+  const { shop, pending, version } = useSession()
 
   const [revenue, setRevenue] = useState(0)
   const [billCount, setBillCount] = useState(0)
@@ -39,7 +39,7 @@ export default function Home() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   return (
     <ScrollView

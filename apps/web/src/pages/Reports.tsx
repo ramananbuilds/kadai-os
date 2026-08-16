@@ -9,7 +9,7 @@ const card = 'rounded-2xl border border-[var(--border)] bg-[var(--surface)] p-4'
 
 /** Weekly report from recent bills; SQL views serve the same shape live. */
 export default function Reports() {
-  const { shop } = useSession()
+  const { shop, version } = useSession()
   const [bills, setBills] = useState<Bill[]>([])
 
   const load = useCallback(async () => {
@@ -19,7 +19,7 @@ export default function Reports() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
   const byDay = new Map<string, { revenue: number; count: number }>()

@@ -12,7 +12,7 @@ export default function Inventory() {
   const dark = useColorScheme() === 'dark'
   const t = dark ? darkTheme : lightTheme
   const { top } = useSafeAreaInsets()
-  const { shop } = useSession()
+  const { shop, version } = useSession()
 
   const [products, setProducts] = useState<Product[]>([])
   const [search, setSearch] = useState('')
@@ -26,7 +26,7 @@ export default function Inventory() {
 
   useEffect(() => {
     void load()
-  }, [load])
+  }, [load, version])
 
   const filtered = useMemo(
     () => (lowOnly ? products.filter((p) => p.stockQty <= p.reorderLevel) : products),

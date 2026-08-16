@@ -73,6 +73,26 @@ export interface DailySummary {
   returns: number
 }
 
+// ─── Realtime (Phase 5) ───────────────────────────────────────────
+
+/**
+ * One changed table per event. Deliberately an invalidation signal, not
+ * a payload: clients refetch through the driver, so rows are mapped once
+ * and transport differences (Realtime vs in-process emitter) never leak.
+ */
+export interface ChangeEvent {
+  table:
+    | 'shops'
+    | 'products'
+    | 'stock_movements'
+    | 'customers'
+    | 'loyalty_ledger'
+    | 'rewards'
+    | 'bills'
+}
+
+export type Unsubscribe = () => void
+
 // ─── The contract ────────────────────────────────────────────────
 
 export interface KadaiDriver {
@@ -122,4 +142,8 @@ export interface KadaiDriver {
 
   // Offline sync drain
   pushOutbox(entries: OutboxEntry[]): Promise<SyncResult>
+
+  // Live sync: fires whenever a table in this shop changes (another
+  // device's bill, a back-office edit, an outbox drain landing).
+  subscribe(shopId: string, onChange: (event: ChangeEvent) => void): Unsubscribe
 }

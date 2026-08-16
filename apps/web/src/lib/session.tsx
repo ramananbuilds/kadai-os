@@ -11,6 +11,8 @@ interface SessionState {
   session: Session | null
   shop: Shop | null
   loading: boolean
+  /** Bumps on every remote change in this shop — pages refetch when it moves. */
+  version: number
   refresh: () => Promise<void>
   signOut: () => Promise<void>
 }
@@ -21,6 +23,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [shop, setShop] = useState<Shop | null>(null)
   const [loading, setLoading] = useState(true)
+  const [version, setVersion] = useState(0)
 
   async function refresh() {
     const s = await api.getSession()
@@ -33,6 +36,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     void refresh()
   }, [])
 
+  // Live sync: another device's bill, a back-office edit, an outbox drain —
+  // all arrive as invalidation signals that bump the version.
+  useEffect(() => {
+    const shopId = shop?.id
+    if (!shopId) return
+    return api.subscribe(shopId, () => setVersion((v) => v + 1))
+  }, [shop?.id])
+
   async function signOut() {
     await api.signOut()
     setSession(null)
@@ -40,7 +51,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <SessionContext.Provider value={{ session, shop, loading, refresh, signOut }}>
+    <SessionContext.Provider value={{ session, shop, loading, version, refresh, signOut }}>
       {children}
     </SessionContext.Provider>
   )

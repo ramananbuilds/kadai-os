@@ -144,4 +144,37 @@ await assert.rejects(
   /Insufficient stock/,
 )
 
+// ── Realtime seam: subscribe → invalidation signals ──────────────
+const remote = createKadaiApi(createMemoryDriver())
+await remote.sendOtp('+919876543210')
+await remote.verifyOtp('+919876543210', '123456')
+
+const seen: string[] = []
+const unsubscribe = remote.subscribe(SHOP, (e) => seen.push(e.table))
+
+const remoteJacket = (await remote.listProducts(SHOP))[0]
+await remote.createBill(SHOP, {
+  id: crypto.randomUUID(),
+  customerId: '00000000-0000-4000-8000-000000000201',
+  items: [{ productId: remoteJacket.id, qty: 1 }],
+  discountPercent: 0,
+  redeemedPoints: 0,
+  redeemedRewardId: null,
+  tender: 'upi',
+  createdAt: new Date().toISOString(),
+})
+assert.ok(seen.includes('bills'), 'bill creation signals bills')
+assert.ok(seen.includes('stock_movements'), 'bill creation signals stock_movements')
+assert.ok(seen.includes('loyalty_ledger'), 'bill creation signals loyalty_ledger')
+assert.ok(seen.includes('customers'), 'bill creation signals customers')
+
+await remote.adjustStock(remoteJacket.id, 5, 'restock', 'test')
+assert.ok(seen.includes('products'), 'stock adjustment signals products')
+
+unsubscribe()
+const before = seen.length
+await remote.createCustomer(SHOP, { name: 'Late Joiner', phone: '+919999999999' })
+assert.equal(seen.length, before, 'unsubscribe stops delivery')
+console.log('✓ realtime seam: invalidation signals, unsubscribe')
+
 console.log('✓ smoke: money, points, tiers, billing transaction, idempotency, stock guards — all passing')
