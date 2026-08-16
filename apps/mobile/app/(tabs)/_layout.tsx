@@ -1,22 +1,24 @@
-import { Pressable, Text, View, useColorScheme } from 'react-native'
+import { Feather } from '@expo/vector-icons'
+import { Pressable, Text, View } from 'react-native'
 import { Tabs, usePathname } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { darkTheme, lightTheme } from '@kadai-os/ui'
 
 import { useSession } from '../../src/lib/session'
+import { useTheme } from '../../src/lib/theme'
 
 const tabs = [
-  { name: 'index', label: 'Home', icon: '🏠' },
-  { name: 'bill', label: 'Bill', icon: '🧾' },
-  { name: 'customers', label: 'Members', icon: '👥' },
-  { name: 'inventory', label: 'Stock', icon: '📦' },
-  { name: 'more', label: 'More', icon: '⋯' },
+  { name: 'index', label: 'Home', icon: 'home' },
+  { name: 'bill', label: 'Bill', icon: 'file-text' },
+  { name: 'customers', label: 'Members', icon: 'users' },
+  { name: 'inventory', label: 'Stock', icon: 'box' },
+  { name: 'more', label: 'More', icon: 'more-horizontal' },
 ] as const
 
 /** Prototype's tab bar: standard tabs with an elevated center Bill pill. */
 export default function TabLayout() {
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const pathname = usePathname()
   const { bottom } = useSafeAreaInsets()
@@ -66,7 +68,7 @@ export default function TabLayout() {
                         elevation: 5,
                       }}
                     >
-                      <Text style={{ fontSize: 22 }}>{icon}</Text>
+                      <Feather name={icon} size={22} color={active ? '#fff' : t.text2} />
                     </View>
                     <Text style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? t.primary : t.text2 }}>
                       {label}
@@ -84,7 +86,7 @@ export default function TabLayout() {
                         justifyContent: 'center',
                       }}
                     >
-                      <Text style={{ fontSize: 18, opacity: active ? 1 : 0.55 }}>{icon}</Text>
+                      <Feather name={icon} size={19} color={active ? t.primary : t.text2} style={{ opacity: active ? 1 : 0.65 }} />
                     </View>
                     <Text style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? t.primary : t.text2 }}>
                       {label}

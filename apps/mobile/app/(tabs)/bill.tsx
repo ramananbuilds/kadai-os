@@ -1,8 +1,10 @@
+import { useTheme } from '../../src/lib/theme'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Modal, Pressable, ScrollView, Text, TextInput, View, useColorScheme } from 'react-native'
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { CameraView, useCameraPermissions } from 'expo-camera'
 
+import { Feather } from '@expo/vector-icons'
 import { darkTheme, lightTheme, radii, statusColors } from '@kadai-os/ui'
 import {
   discountPaise,
@@ -30,7 +32,7 @@ interface CartLine {
 
 /** The counter: catalog → cart → checkout → outbox → receipt. */
 export default function BillScreen() {
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const { top } = useSafeAreaInsets()
   const { shop, version } = useSession()
@@ -174,7 +176,7 @@ export default function BillScreen() {
             }}
             style={{ width: 40, height: 40, borderRadius: 12, backgroundColor: t.surface, borderWidth: 1, borderColor: t.border, alignItems: 'center', justifyContent: 'center' }}
           >
-            <Text style={{ fontSize: 18 }}>🔍</Text>
+            <Feather name="search" size={18} color={t.text2} />
           </Pressable>
         </View>
         <TextInput
@@ -381,7 +383,7 @@ export default function BillScreen() {
               onPress={() => receipt && shop && void printReceipt(receipt, shop, customers.find((c) => c.id === receipt.customerId)?.name)}
               style={{ backgroundColor: t.primary, borderRadius: radii.md, paddingVertical: 14, alignItems: 'center' }}
             >
-              <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>🖨️ Print receipt</Text>
+              <Text style={{ color: '#fff', fontSize: 15, fontWeight: '700' }}>Print receipt</Text>
             </Pressable>
             <Pressable onPress={() => setReceipt(null)} style={{ alignItems: 'center', padding: 6 }}>
               <Text style={{ color: t.text2, fontSize: 14 }}>Done</Text>

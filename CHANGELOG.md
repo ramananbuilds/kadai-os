@@ -6,6 +6,18 @@ phase-scoped until first store release.
 
 ## [Unreleased]
 
+## [0.6.1] — 2026-08-17 — Branding, themes, icon packs
+
+### Changed
+- "Kadai OS" branding everywhere: login screens, headers, member tier
+  cards, HTML/site titles (was "Shop OS" in several spots).
+- Manual theme control on both apps — system / light / dark — persisted
+  (localStorage on web, SQLite kv on mobile) via a shared ThemeProvider
+  pattern; web header cycles modes, mobile More screen has a selector.
+- Zero emoji icons: web uses lucide-react, mobile uses
+  @expo/vector-icons (Feather + Ionicons) — tab bars, nav, quick
+  actions, login logo, scanner, print, rewards, theme selector.
+
 ## [0.6.0] — 2026-08-17 — Phase 6: loyalty engine + launch scaffolding
 
 ### Added

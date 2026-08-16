@@ -1,16 +1,18 @@
+import { useTheme } from '../../src/lib/theme'
 import { useCallback, useEffect, useState } from 'react'
-import { Pressable, RefreshControl, ScrollView, Text, View, useColorScheme } from 'react-native'
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { useRouter } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { darkTheme, lightTheme, radii, statusColors } from '@kadai-os/ui'
+import { Feather } from '@expo/vector-icons'
 import { formatINR, type Bill, type Product } from '@kadai-os/core'
 
 import { api } from '../../src/lib/api'
 import { useSession } from '../../src/lib/session'
 
 export default function Home() {
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const router = useRouter()
   const { top } = useSafeAreaInsets()
@@ -82,9 +84,9 @@ export default function Home() {
       {/* Quick actions */}
       <View style={{ flexDirection: 'row', gap: 10 }}>
         {[
-          { icon: '⚡', label: 'New bill', to: '/(tabs)/bill' as const, primary: true },
-          { icon: '📦', label: 'Stock', to: '/(tabs)/inventory' as const, primary: false },
-          { icon: '👥', label: 'Members', to: '/(tabs)/customers' as const, primary: false },
+          { icon: 'zap', label: 'New bill', to: '/(tabs)/bill' as const, primary: true },
+          { icon: 'box', label: 'Stock', to: '/(tabs)/inventory' as const, primary: false },
+          { icon: 'users', label: 'Members', to: '/(tabs)/customers' as const, primary: false },
         ].map((q) => (
           <Pressable
             key={q.label}

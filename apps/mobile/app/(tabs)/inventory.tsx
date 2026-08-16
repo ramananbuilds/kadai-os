@@ -1,5 +1,6 @@
+import { useTheme } from '../../src/lib/theme'
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Pressable, ScrollView, Text, TextInput, View, useColorScheme } from 'react-native'
+import { Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { darkTheme, lightTheme, radii, statusColors } from '@kadai-os/ui'
@@ -9,7 +10,7 @@ import { api } from '../../src/lib/api'
 import { useSession } from '../../src/lib/session'
 
 export default function Inventory() {
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const { top } = useSafeAreaInsets()
   const { shop, version } = useSession()

@@ -1,5 +1,6 @@
 /** Receipt preview + browser printing (58 mm print CSS). */
 
+import { Printer } from 'lucide-react'
 import { renderReceipt, type Bill, type Shop } from '@kadai-os/core'
 
 export default function Receipt({
@@ -40,7 +41,7 @@ export default function Receipt({
             onClick={() => window.print()}
             className="flex-1 rounded-xl bg-[var(--primary)] text-white font-bold text-sm py-3"
           >
-            🖨️ Print
+            <Printer size={15} className="inline" /> Print
           </button>
           <button onClick={onDone} className="px-4 rounded-xl border border-[var(--border-mid)] text-sm font-semibold">
             Done

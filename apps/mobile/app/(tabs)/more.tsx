@@ -1,4 +1,6 @@
-import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { useTheme } from '../../src/lib/theme'
+import { Pressable, ScrollView, Text, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 
@@ -9,7 +11,7 @@ import { kvGet } from '../../src/lib/outbox'
 import { useSession } from '../../src/lib/session'
 
 export default function More() {
-  const dark = useColorScheme() === 'dark'
+  const { dark, mode: themeMode, setMode } = useTheme()
   const t = dark ? darkTheme : lightTheme
   const { top } = useSafeAreaInsets()
   const router = useRouter()
@@ -39,6 +41,36 @@ export default function More() {
             <Text style={{ fontSize: 12, color: t.text3 }}>{row.hint}</Text>
           </View>
         ))}
+      </View>
+
+      {/* Theme: system / light / dark */}
+      <View style={{ backgroundColor: t.surface, borderColor: t.border, borderWidth: 1, borderRadius: radii.md, padding: 14, gap: 10 }}>
+        <Text style={{ fontSize: 14, fontWeight: '600', color: t.text }}>Appearance</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          {([
+            { mode: 'system' as const, icon: 'phone-portrait-outline' as const, label: 'System' },
+            { mode: 'light' as const, icon: 'sunny-outline' as const, label: 'Light' },
+            { mode: 'dark' as const, icon: 'moon-outline' as const, label: 'Dark' },
+          ]).map(({ mode, icon, label }) => (
+            <Pressable
+              key={mode}
+              onPress={() => setMode(mode)}
+              style={{
+                flex: 1,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: 6,
+                paddingVertical: 9,
+                borderRadius: 10,
+                backgroundColor: themeMode === mode ? t.primary : t.surface2,
+              }}
+            >
+              <Ionicons name={icon} size={15} color={themeMode === mode ? '#fff' : t.text2} />
+              <Text style={{ fontSize: 12, fontWeight: '700', color: themeMode === mode ? '#fff' : t.text2 }}>{label}</Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
 
       <Pressable

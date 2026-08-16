@@ -1,5 +1,6 @@
+import { useTheme } from '../../src/lib/theme'
 import { useCallback, useEffect, useState } from 'react'
-import { Modal, Pressable, ScrollView, Text, TextInput, View, useColorScheme } from 'react-native'
+import { Modal, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { darkTheme, lightTheme, radii, tierColors } from '@kadai-os/ui'
@@ -9,7 +10,7 @@ import { api } from '../../src/lib/api'
 import { useSession } from '../../src/lib/session'
 
 export default function Customers() {
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const { top } = useSafeAreaInsets()
   const { shop, version } = useSession()
@@ -94,7 +95,7 @@ export default function Customers() {
               <>
                 <View style={{ backgroundColor: tierColors[progress.current], borderRadius: radii.lg, padding: 20, gap: 12 }}>
                   <Text style={{ fontSize: 11, fontWeight: '700', color: 'rgba(255,255,255,0.7)', textTransform: 'uppercase', letterSpacing: 1 }}>
-                    Shop OS · {progress.current}
+                    Kadai OS · {progress.current}
                   </Text>
                   <Text style={{ fontSize: 24, fontWeight: '800', color: '#fff' }}>{selected.name}</Text>
                   <Text style={{ fontSize: 13, color: 'rgba(255,255,255,0.65)' }}>{selected.phone}</Text>

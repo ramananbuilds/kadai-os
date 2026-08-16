@@ -1,6 +1,7 @@
+import { useTheme } from '../src/lib/theme'
 import { useState } from 'react'
 import { useRouter } from 'expo-router'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View, useColorScheme } from 'react-native'
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 
 import { darkTheme, lightTheme, radii } from '@kadai-os/ui'
 
@@ -10,7 +11,7 @@ import { useSession } from '../src/lib/session'
 /** First-run shop creation → create_shop_for_owner RPC (one transaction). */
 export default function NewShop() {
   const router = useRouter()
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const { refresh } = useSession()
 

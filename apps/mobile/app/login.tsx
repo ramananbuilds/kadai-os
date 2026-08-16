@@ -1,7 +1,9 @@
+import { useTheme } from '../src/lib/theme'
 import { useState } from 'react'
 import { useRouter } from 'expo-router'
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View, useColorScheme } from 'react-native'
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native'
 
+import { Feather } from '@expo/vector-icons'
 import { darkTheme, lightTheme, radii } from '@kadai-os/ui'
 import { toE164 } from '@kadai-os/core'
 
@@ -11,7 +13,7 @@ import { useSession } from '../src/lib/session'
 
 export default function Login() {
   const router = useRouter()
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const { refresh } = useSession()
 
@@ -66,9 +68,9 @@ export default function Login() {
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 28, gap: 14 }}>
         <View style={{ alignItems: 'center', gap: 10, marginBottom: 12 }}>
           <View style={{ width: 64, height: 64, borderRadius: 20, backgroundColor: t.primary, alignItems: 'center', justifyContent: 'center' }}>
-            <Text style={{ fontSize: 28 }}>🛍️</Text>
+            <Feather name="shopping-bag" size={28} color="#fff" />
           </View>
-          <Text style={{ fontSize: 24, fontWeight: '800', color: t.text }}>Shop OS</Text>
+          <Text style={{ fontSize: 24, fontWeight: '800', color: t.text }}>Kadai OS</Text>
           <Text style={{ fontSize: 14, color: t.text2 }}>
             {step === 'phone' ? 'Sign in to your store' : `Code sent to ${phone}`}
           </Text>

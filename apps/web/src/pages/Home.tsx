@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
+import { Zap } from 'lucide-react'
 import { formatINR, type Bill, type Product } from '@kadai-os/core'
 
 import { api } from '../lib/api'
@@ -36,8 +37,8 @@ export default function Home() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <p className="text-[13px] font-medium text-[var(--text-2)]">Today</p>
-        <h1 className="text-2xl font-extrabold tracking-tight">Good day at the counter 👋</h1>
+        <p className="text-[13px] font-medium text-[var(--text-2)]">Kadai OS · Today</p>
+        <h1 className="text-2xl font-extrabold tracking-tight">Good day at the counter</h1>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -47,19 +48,19 @@ export default function Home() {
           <p className="text-[13px] text-white/65 mt-1">{billCount} bills</p>
           <Link
             to="/bill"
-            className="inline-block mt-4 rounded-xl bg-white/15 hover:bg-white/25 transition-colors px-4 py-2 text-sm font-bold"
+            className="inline-flex items-center gap-2 mt-4 rounded-xl bg-white/15 hover:bg-white/25 transition-colors px-4 py-2 text-sm font-bold"
           >
-            ⚡ New bill
+            <Zap size={15} /> New bill
           </Link>
         </div>
         <div className="flex flex-col gap-4">
           {[
-            { label: 'Low stock', value: lowStock.length, to: '/inventory' },
-            { label: 'Members', value: '', to: '/customers' },
+            { label: 'Low stock', value: String(lowStock.length), to: '/inventory' },
+            { label: 'Members', value: 'View', to: '/customers' },
           ].map((q) => (
             <Link key={q.label} to={q.to} className={`${card} flex-1 hover:border-[var(--primary)] transition-colors`}>
               <p className="text-[11px] text-[var(--text-2)] font-medium">{q.label}</p>
-              <p className="text-2xl font-extrabold mt-1">{q.value === '' ? '→' : q.value}</p>
+              <p className="text-2xl font-extrabold mt-1">{q.value}</p>
             </Link>
           ))}
         </div>

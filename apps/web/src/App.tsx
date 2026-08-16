@@ -1,7 +1,21 @@
+import { useState } from 'react'
 import { NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import {
+  BarChart3,
+  Gift,
+  Home as HomeIcon,
+  Monitor,
+  Moon,
+  Package,
+  Receipt,
+  Settings as SettingsIcon,
+  Sun,
+  Users,
+} from 'lucide-react'
 
 import { backend } from './lib/api'
 import { SessionProvider, useSession } from './lib/session'
+import { applyTheme, getThemeMode, type ThemeMode } from './lib/theme'
 
 import Login from './pages/Login'
 import NewShop from './pages/NewShop'
@@ -14,14 +28,34 @@ import Rewards from './pages/Rewards'
 import Settings from './pages/Settings'
 
 const nav = [
-  { to: '/', label: 'Home', icon: '🏠', end: true },
-  { to: '/bill', label: 'Bill', icon: '🧾' },
-  { to: '/customers', label: 'Members', icon: '👥' },
-  { to: '/inventory', label: 'Stock', icon: '📦' },
-  { to: '/reports', label: 'Reports', icon: '📊' },
-  { to: '/rewards', label: 'Rewards', icon: '🎁' },
-  { to: '/settings', label: 'Settings', icon: '⚙️' },
+  { to: '/', label: 'Home', Icon: HomeIcon, end: true },
+  { to: '/bill', label: 'Bill', Icon: Receipt },
+  { to: '/customers', label: 'Members', Icon: Users },
+  { to: '/inventory', label: 'Stock', Icon: Package },
+  { to: '/reports', label: 'Reports', Icon: BarChart3 },
+  { to: '/rewards', label: 'Rewards', Icon: Gift },
+  { to: '/settings', label: 'Settings', Icon: SettingsIcon },
 ]
+
+/** Cycles system → light → dark; the icon shows the current mode. */
+function ThemeToggle() {
+  const [mode, setMode] = useState<ThemeMode>(getThemeMode)
+  const next: Record<ThemeMode, ThemeMode> = { system: 'light', light: 'dark', dark: 'system' }
+  const Icon = mode === 'light' ? Sun : mode === 'dark' ? Moon : Monitor
+  return (
+    <button
+      title={`Theme: ${mode}`}
+      onClick={() => {
+        const n = next[mode]
+        setMode(n)
+        applyTheme(n)
+      }}
+      className="w-9 h-9 grid place-items-center rounded-[10px] text-[var(--text-2)] hover:text-[var(--primary)] hover:bg-[var(--surface-2)] transition-colors"
+    >
+      <Icon size={18} />
+    </button>
+  )
+}
 
 /** Authed shell: sidebar on desktop, bottom tabs on small screens. */
 function Shell({ children }: { children: React.ReactNode }) {
@@ -29,16 +63,15 @@ function Shell({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text)] flex flex-col">
       <header className="sticky top-0 z-20 border-b border-[var(--border)] bg-[var(--surface)]/90 backdrop-blur px-4 sm:px-6 py-3 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-[10px] bg-[var(--primary)] text-white grid place-items-center text-sm font-bold shrink-0">
-          K
-        </div>
+        <div className="w-8 h-8 rounded-[10px] bg-[var(--primary)] text-white grid place-items-center text-sm font-bold shrink-0">K</div>
         <div className="min-w-0">
           <p className="text-[15px] font-bold leading-tight truncate">{shop?.name ?? 'Kadai OS'}</p>
           <p className="text-[11px] text-[var(--text-2)] leading-tight">
-            Shop OS · {backend === 'memory' ? 'demo backend' : 'live'} · full parity + back-office
+            Kadai OS · {backend === 'memory' ? 'demo backend' : 'live'} · full parity + back-office
           </p>
         </div>
         <div className="flex-1" />
+        <ThemeToggle />
         <button
           onClick={() => void signOut()}
           className="text-[13px] font-semibold text-[var(--text-2)] hover:text-[var(--primary)] px-2 py-1"
@@ -49,11 +82,11 @@ function Shell({ children }: { children: React.ReactNode }) {
 
       <div className="flex-1 flex">
         <nav className="hidden md:flex flex-col gap-1 w-52 shrink-0 border-r border-[var(--border)] p-3 sticky top-[57px] self-start">
-          {nav.map((n) => (
+          {nav.map(({ to, label, Icon, end }) => (
             <NavLink
-              key={n.to}
-              to={n.to}
-              end={n.end}
+              key={to}
+              to={to}
+              end={end}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2 rounded-[10px] text-sm font-semibold transition-colors ${
                   isActive
@@ -62,7 +95,7 @@ function Shell({ children }: { children: React.ReactNode }) {
                 }`
               }
             >
-              <span>{n.icon}</span> {n.label}
+              <Icon size={17} strokeWidth={2} /> {label}
             </NavLink>
           ))}
         </nav>
@@ -74,19 +107,19 @@ function Shell({ children }: { children: React.ReactNode }) {
 
       {/* Mobile tab bar */}
       <nav className="md:hidden fixed bottom-0 inset-x-0 z-20 border-t border-[var(--border)] bg-[var(--surface)]/95 backdrop-blur flex pb-[env(safe-area-inset-bottom)]">
-        {nav.slice(0, 5).map((n) => (
+        {nav.slice(0, 5).map(({ to, label, Icon, end }) => (
           <NavLink
-            key={n.to}
-            to={n.to}
-            end={n.end}
+            key={to}
+            to={to}
+            end={end}
             className={({ isActive }) =>
               `flex-1 flex flex-col items-center gap-1 py-2 text-[10px] font-semibold ${
                 isActive ? 'text-[var(--primary)]' : 'text-[var(--text-2)]'
               }`
             }
           >
-            <span className="text-lg leading-none">{n.icon}</span>
-            {n.label}
+            <Icon size={20} strokeWidth={2} />
+            {label}
           </NavLink>
         ))}
       </nav>

@@ -1,20 +1,22 @@
+import { useTheme } from '../src/lib/theme'
 import { useState } from 'react'
 import { useRouter } from 'expo-router'
-import { Pressable, ScrollView, Text, View, useColorScheme } from 'react-native'
+import { Pressable, ScrollView, Text, View } from 'react-native'
+import { Feather } from '@expo/vector-icons'
 
 import { darkTheme, lightTheme, radii } from '@kadai-os/ui'
 
 import { kvSet } from '../src/lib/outbox'
 
 const pages = [
-  { icon: '⚡', title: 'Bill in seconds', body: 'Scan barcodes, build the cart, print the receipt. Built for the counter, not the office.' },
-  { icon: '📦', title: 'Stock that counts itself', body: 'Every bill updates stock. Reorder before you run out, not after.' },
-  { icon: '🎁', title: 'Customers who come back', body: 'Every bill earns points. Points unlock tiers and rewards — the reason they return.' },
+  { icon: 'zap', title: 'Bill in seconds', body: 'Scan barcodes, build the cart, print the receipt. Built for the counter, not the office.' },
+  { icon: 'box', title: 'Stock that counts itself', body: 'Every bill updates stock. Reorder before you run out, not after.' },
+  { icon: 'gift', title: 'Customers who come back', body: 'Every bill earns points. Points unlock tiers and rewards — the reason they return.' },
 ]
 
 export default function Onboarding() {
   const router = useRouter()
-  const dark = useColorScheme() === 'dark'
+  const dark = useTheme().dark
   const t = dark ? darkTheme : lightTheme
   const [page, setPage] = useState(0)
   const current = pages[page]

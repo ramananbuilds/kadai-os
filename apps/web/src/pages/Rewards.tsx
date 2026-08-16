@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { Gift } from 'lucide-react'
 import { formatINR, rupeesToPaise, type Reward } from '@kadai-os/core'
 
 import { api } from '../lib/api'
@@ -116,7 +117,7 @@ export default function Rewards() {
         {rewards.length === 0 && <p className="text-sm text-[var(--text-2)]">No rewards yet — add the first one.</p>}
         {rewards.map((r) => (
           <div key={r.id} className={`${card} flex items-center gap-3`}>
-            <span className="text-xl">🎁</span>
+            <Gift size={22} className="text-[var(--primary)] shrink-0" />
             <div className="flex-1 min-w-0">
               <p className="text-sm font-bold truncate">{r.name}</p>
               <p className="text-[12px] text-[var(--text-2)]">

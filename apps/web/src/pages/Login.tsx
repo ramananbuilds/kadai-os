@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
+import { ShoppingBag } from 'lucide-react'
 import { toE164 } from '@kadai-os/core'
 
 import { api, backend } from '../lib/api'
@@ -50,9 +51,9 @@ export default function Login() {
       <div className="w-full max-w-sm flex flex-col gap-4">
         <div className="text-center flex flex-col gap-3 mb-2">
           <div className="w-16 h-16 rounded-2xl bg-[var(--primary)] text-white grid place-items-center text-3xl mx-auto shadow-lg">
-            🛍️
+            <ShoppingBag size={30} strokeWidth={2.2} color="#fff" />
           </div>
-          <h1 className="text-2xl font-extrabold text-[var(--text)]">Shop OS</h1>
+          <h1 className="text-2xl font-extrabold text-[var(--text)]">Kadai OS</h1>
           <p className="text-sm text-[var(--text-2)]">
             {step === 'phone' ? 'Sign in to your store' : `Code sent to ${phone}`}
           </p>

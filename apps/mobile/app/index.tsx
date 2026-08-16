@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'expo-router'
 import { Animated, Easing, Text, View } from 'react-native'
 
+import { Feather } from '@expo/vector-icons'
 import { darkTheme } from '@kadai-os/ui'
 
 import { kvGet } from '../src/lib/outbox'
@@ -47,7 +48,7 @@ export default function SplashGate() {
           transform: [{ scale: pulse }],
         }}
       >
-        <Text style={{ fontSize: 30 }}>🛍️</Text>
+        <Feather name="shopping-bag" size={30} color="#fff" />
       </Animated.View>
       <Text style={{ fontSize: 26, fontWeight: '800', color: darkTheme.text, letterSpacing: -0.5 }}>Kadai OS</Text>
       <Text style={{ fontSize: 13, color: darkTheme.text2 }}>Billing · Stock · Loyalty</Text>

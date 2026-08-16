@@ -124,7 +124,7 @@ export default function Customers() {
           <div className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4" onClick={() => setSelected(null)}>
             <div className="bg-[var(--surface)] rounded-2xl p-5 w-full max-w-md max-h-[85vh] overflow-auto" onClick={(e) => e.stopPropagation()}>
               <div className="rounded-2xl p-5 text-white" style={{ background: tierColor[progress.current] }}>
-                <p className="text-[11px] uppercase tracking-widest font-bold opacity-70">Shop OS · {progress.current}</p>
+                <p className="text-[11px] uppercase tracking-widest font-bold opacity-70">Kadai OS · {progress.current}</p>
                 <p className="text-2xl font-extrabold mt-1">{selected.name}</p>
                 <p className="text-[13px] opacity-65">{selected.phone}</p>
                 <div className="grid grid-cols-3 gap-2 mt-4">
