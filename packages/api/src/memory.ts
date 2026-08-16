@@ -518,6 +518,24 @@ export function createMemoryDriver(options: MemoryDriverOptions = {}): KadaiDriv
       return state.rewards.filter((r) => r.isActive)
     },
 
+    async createReward(_shopId, input) {
+      const reward: Reward = {
+        id: crypto.randomUUID(),
+        shopId: SHOP_ID,
+        ...input,
+        isActive: true,
+      }
+      state.rewards.push(reward)
+      return reward
+    },
+
+    async setRewardActive(rewardId, isActive) {
+      const reward = state.rewards.find((r) => r.id === rewardId)
+      if (!reward) throw new Error('Reward not found')
+      reward.isActive = isActive
+      return reward
+    },
+
     async dailySummary(_shopId, date): Promise<DailySummary> {
       const dayBills = [...state.bills.values()].filter((b) => b.createdAt.slice(0, 10) === date)
       const revenue = dayBills.reduce((s, b) => s + b.totalPaise, 0)

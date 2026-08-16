@@ -428,6 +428,30 @@ export function createSupabaseDriver(config: SupabaseConfig): KadaiDriver {
       return unwrap(await db.from('rewards').select('*').eq('shop_id', shopId).eq('is_active', true))
     },
 
+    async createReward(shopId, input) {
+      return unwrap(
+        await db
+          .from('rewards')
+          .insert({
+            shop_id: shopId,
+            name: input.name,
+            kind: input.kind,
+            value: input.value,
+            min_spend_paise: input.minSpendPaise,
+            cost_points: input.costPoints,
+            expiry_days: input.expiryDays,
+          })
+          .select()
+          .single(),
+      )
+    },
+
+    async setRewardActive(rewardId, isActive) {
+      return unwrap(
+        await db.from('rewards').update({ is_active: isActive }).eq('id', rewardId).select().single(),
+      )
+    },
+
     async dailySummary(shopId, date): Promise<DailySummary> {
       const rows = unwrap(
         await db.from('daily_sales').select('*').eq('shop_id', shopId).eq('date', date).maybeSingle(),

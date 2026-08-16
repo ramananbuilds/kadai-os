@@ -114,6 +114,8 @@ export interface KadaiDriver {
   // Loyalty
   listLedger(customerId: string): Promise<LoyaltyEntry[]>
   listRewards(shopId: string): Promise<Reward[]>
+  createReward(shopId: string, input: Omit<Reward, 'id' | 'shopId' | 'isActive'>): Promise<Reward>
+  setRewardActive(rewardId: string, isActive: boolean): Promise<Reward>
 
   // Aggregates
   dailySummary(shopId: string, date: string): Promise<DailySummary>
