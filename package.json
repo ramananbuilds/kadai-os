@@ -8,6 +8,7 @@
     "dev": "vite --host 0.0.0.0",
     "dev:web": "pnpm --filter @kadai-os/web dev",
     "dev:mobile": "pnpm --filter @kadai-os/mobile start",
+    "dev:mobile:fresh": "pnpm --filter @kadai-os/mobile start --clear",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
     "format": "oxfmt"
