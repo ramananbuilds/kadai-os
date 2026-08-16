@@ -6,7 +6,11 @@ you. Each step is otherwise wired and ready.
 ## Backend (Supabase project)
 
 1. Follow [`supabase/SETUP.md`](../supabase/SETUP.md) — project, migrations
-   (`supabase db push`), phone auth with an SMS provider (MSG91/Twilio).
+   (`supabase db push`), phone auth. **OTP costs nothing to start:** demo
+   backend (code `123456`) → local CLI test provider (OTPs in logs) →
+   Firebase Phone Auth bridge (10K free verifications/month, no DLT
+   paperwork — Supabase accepts Firebase tokens natively). Paid MSG91 /
+   Twilio only if volume ever demands it.
 2. **Backups**: Database → Backups → enable daily backups + PITR (Pro).
 3. **Environments**: create `kadai-os-staging` and `kadai-os-prod` projects;
    push migrations to both; keep `.env.local` pointed at staging until

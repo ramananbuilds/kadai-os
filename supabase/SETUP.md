@@ -38,15 +38,30 @@ Postgres with Supabase auth shimmed:
 pnpm --filter @kadai-os/api sql-smoke
 ```
 
-## 3. Enable phone auth
+## 3. Enable phone auth — free first
 
-Authentication → Providers → Phone:
-- pick an SMS provider (Twilio, Vonage, or MSG91 for India)
-- enter the provider's credentials
-- keep "Confirm phone" ON (OTP flow)
+The OTP ladder, cheapest first:
 
-For local testing without an SMS provider, enable the built-in test
-provider — it logs OTPs to the server console.
+1. **Zero setup (now):** the in-memory demo backend ships with the app —
+   any phone number, code `123456`. No SMS is ever sent.
+2. **Free, local:** `supabase start` (CLI) runs a local project with the
+   test SMS provider — OTPs print to the server log. Same migrations,
+   same code.
+3. **Free in production — Firebase Phone Auth bridge:** Firebase gives
+   10,000 free SMS verifications/month (Blaze plan with billing attached;
+   ₹0 while under quota; India in the cheapest tier beyond). Google runs
+   the SMS aggregators, so **no DLT registration for you**. Supabase
+   accepts Firebase tokens natively:
+   - Firebase console → enable Phone Auth (add your app ids / SHA keys)
+   - Supabase dashboard → Auth → Third Party → Firebase → paste the
+     Firebase project ID + service-account JWT
+   - Client: verify with Firebase (`signInWithPhoneNumber` +
+     recaptcha), then `supabase.auth.signInWithIdToken({ provider:
+     'firebase', token: firebaseIdToken })` in place of `verifyOtp`
+4. **Paid, later:** direct MSG91/Twilio/Vonage in Supabase (Auth →
+   Phone) once volume justifies it — India requires DLT registration
+   (~2 weeks paperwork), so start that early only if you know you'll
+   need it.
 
 ## 4. Point the apps at it
 
