@@ -6,6 +6,27 @@ phase-scoped until first store release.
 
 ## [Unreleased]
 
+## [0.6.0] — 2026-08-17 — Phase 6: loyalty engine + launch scaffolding
+
+### Added
+- Reward redemption is now fully server-side and atomic: redeeming a
+  reward applies its discount **and** charges its `cost_points` inside
+  `create_bill` (v2 in `0007_loyalty.sql`), recorded as the bill's
+  `redeemed_points` with a single ledger entry.
+- Points expiry: `shops.points_expiry_days` (null = never) plus
+  `expire_stale_points()` — a FIFO replay where redeems consume the
+  oldest points first and only never-spent aged earns expire, as
+  append-only `expire` entries. Mirrored on the memory driver via
+  `expireStalePoints()`; pg_cron scheduling documented in LAUNCH.md.
+- EAS build profiles (`eas.json`: development/preview/production) and
+  `docs/LAUNCH.md` — the launch checklist for everything needing
+  accounts: PITR backups, staging/prod projects, Play-first submission,
+  Sentry/PostHog wiring points.
+
+### Fixed
+- `create_bill` walk-in guard now also covers reward redemption
+  (rewards always require a customer).
+
 ## [0.5.0] — 2026-08-17 — Phase 5: live sync
 
 ### Added

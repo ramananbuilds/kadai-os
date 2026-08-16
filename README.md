@@ -19,7 +19,7 @@ like money — append-only ledger, integer math, server-authoritative.
 | 3 | Mobile app: screen stack, barcode scanning, offline outbox, receipts | ✅ core loop (Bluetooth ESC/POS transport awaits the native build) |
 | 4 | Web full-parity rebuild + owner back-office | ✅ done |
 | 5 | Realtime sync across all clients | ✅ done (live-project verification pending) |
-| 6 | Loyalty engine polish, launch hardening | planned |
+| 6 | Loyalty engine completion + launch scaffolding | ✅ done — see [docs/LAUNCH.md](docs/LAUNCH.md) for the account-dependent steps |
 
 ## Layout
 
