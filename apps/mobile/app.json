@@ -2,6 +2,7 @@
   "expo": {
     "name": "Kadai OS",
     "slug": "kadai-os",
+    "scheme": "kadaios",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -23,6 +24,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "plugins": [
+      "expo-router",
+      "expo-asset",
+      "expo-sqlite"
+    ]
   }
 }

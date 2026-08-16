@@ -1,7 +1,7 @@
 {
   "name": "@kadai-os/mobile",
   "version": "0.1.0",
-  "main": "index.ts",
+  "main": "expo-router/entry",
   "private": true,
   "scripts": {
     "start": "expo start",
@@ -14,10 +14,20 @@
     "@kadai-os/api": "workspace:*",
     "@kadai-os/core": "workspace:*",
     "@kadai-os/ui": "workspace:*",
+    "@react-native-community/netinfo": "12.0.1",
     "expo": "~57.0.13",
+    "expo-asset": "~57.0.11",
+    "expo-camera": "~57.0.3",
+    "expo-constants": "~57.0.11",
+    "expo-linking": "~57.0.6",
+    "expo-print": "~57.0.1",
+    "expo-router": "~57.0.13",
+    "expo-sqlite": "~57.0.1",
     "expo-status-bar": "~57.0.1",
     "react": "19.2.3",
-    "react-native": "0.86.2"
+    "react-native": "0.86.2",
+    "react-native-safe-area-context": "~5.7.0",
+    "react-native-screens": "~4.26.2"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
